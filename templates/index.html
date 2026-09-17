@@ -12,70 +12,369 @@
             --text-sub: #94a3b8;
             --accent: #38bdf8;
             --accent-hover: #0ea5e9;
+            --danger: #ef4444;
         }
         body {
-            margin: 0; padding: 0;
+            margin: 0; padding: 20px;
             font-family: 'Pretendard', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center;
             min-height: 100vh;
         }
-        .container { width: 100%; max-width: 650px; padding: 20px; box-sizing: border-box; }
+        .container { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
         .card {
             background-color: var(--card-bg);
-            border-radius: 16px; padding: 30px;
+            border-radius: 16px; padding: 25px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        h1 { font-size: 1.8rem; margin-bottom: 10px; text-align: center; }
-        p.desc { color: var(--text-sub); font-size: 0.95rem; margin-bottom: 25px; text-align: center; }
-        .live-box {
-            background: #0f172a; border-radius: 10px; padding: 15px;
-            margin-top: 20px; border: 1px solid #334155;
-            max-height: 200px; overflow-y: auto;
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        h1 { font-size: 1.6rem; margin: 0; text-align: center; flex: 1; }
+        p.desc { color: var(--text-sub); font-size: 0.9rem; margin-bottom: 20px; text-align: center; }
+        h3 { font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 4px; }
+        .form-control {
+            width: 100%; padding: 10px; box-sizing: border-box;
+            background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+            color: var(--text-main); font-size: 0.95rem;
         }
-        .live-item {
-            padding: 8px 10px; margin-bottom: 6px;
-            background: #1e293b; border-radius: 6px;
-            font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+        textarea.form-control { resize: vertical; height: 80px; }
+        
+        .tab-menu { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab-btn {
+            flex: 1; background: #0f172a; border: 1px solid #334155; color: var(--text-sub);
+            padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center;
         }
+        .tab-btn.active { background: var(--accent); color: #0f172a; border-color: var(--accent); }
+
+        .btn {
+            background-color: var(--accent); color: #0f172a;
+            border: none; padding: 10px 15px; border-radius: 8px;
+            font-weight: 600; cursor: pointer; width: 100%; transition: background 0.2s;
+        }
+        .btn:hover { background-color: var(--accent-hover); }
+        
+        .btn-sm {
+            background-color: #334155; color: var(--text-main);
+            border: none; padding: 5px 10px; border-radius: 6px;
+            font-size: 0.75rem; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-danger { background-color: var(--danger); color: white; }
+
+        .list-box {
+            background: #0f172a; border-radius: 10px; padding: 12px;
+            max-height: 200px; overflow-y: auto; border: 1px solid #334155;
+        }
+        .item {
+            padding: 10px; margin-bottom: 8px;
+            background: #1e293b; border-radius: 6px; font-size: 0.85rem;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .item-content { flex: 1; }
+        .item-header { display: flex; justify-content: space-between; color: var(--accent); margin-bottom: 3px; font-weight: 600; }
+        .item-time { font-size: 0.75rem; color: var(--text-sub); }
+        .badge { background: #334155; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 상단 헤더 및 디스코드 실시간 채널 현황 -->
         <div class="card">
-            <h1>🌙 달빛정원 통합 홍보소</h1>
+            <div class="header-flex">
+                <div style="width: 70px;"></div>
+                <h1>🌙 달빛정원 통합 홍보소</h1>
+                <div style="display: flex; gap: 5px;">
+                    <button class="btn-sm" id="auth-btn" onclick="openLoginModal()">운영진 로그인</button>
+                    <button class="btn-sm" id="pw-btn" style="display: none;" onclick="openPasswordChangeModal()">비번변경</button>
+                </div>
+            </div>
             <p class="desc">디스코드 서버와 실시간으로 연동되는 통합 홍보소입니다.</p>
             
             <h3>📢 실시간 디스코드 채널 현황</h3>
-            <div class="live-box" id="channel-list">
-                <div class="live-item">✨ 서버 연결 대기 중...</div>
+            <div class="list-box" id="channel-list">
+                <div class="item"><div class="item-content">✨ 서버 연결 대기 중...</div></div>
+            </div>
+        </div>
+
+        <!-- 문의 및 외주 신청 카드 -->
+        <div class="card">
+            <h3>📝 접수 및 신청하기</h3>
+            <div class="tab-menu">
+                <div class="tab-btn active" id="tab-cs-btn" onclick="switchTab('cs')">일반 CS 문의</div>
+                <div class="tab-btn" id="tab-design-btn" onclick="switchTab('design')">디자인 외주 신청</div>
+            </div>
+
+            <!-- 일반 CS 폼 -->
+            <form id="cs-form">
+                <div class="form-group">
+                    <label>닉네임 / 성함</label>
+                    <input type="text" id="cs-author" class="form-control" placeholder="작성자 명 입력" required>
+                </div>
+                <div class="form-group">
+                    <label>연락처 (디스코드 아이디 등)</label>
+                    <input type="text" id="cs-contact" class="form-control" placeholder="예: username#0000" required>
+                </div>
+                <div class="form-group">
+                    <label>문의 내용</label>
+                    <textarea id="cs-content" class="form-control" placeholder="문의 내용을 입력하세요." required></textarea>
+                </div>
+                <button type="submit" class="btn">CS 문의 접수</button>
+            </form>
+
+            <!-- 디자인 외주 폼 -->
+            <form id="design-form" style="display: none;">
+                <div class="form-group">
+                    <label>신청자 / 서버 이름</label>
+                    <input type="text" id="design-author" class="form-control" placeholder="신청자 명 입력" required>
+                </div>
+                <div class="form-group">
+                    <label>연락처 (디스코드 아이디 등)</label>
+                    <input type="text" id="design-contact" class="form-control" placeholder="예: username#0000" required>
+                </div>
+                <div class="form-group">
+                    <label>담당 디자이너 지정</label>
+                    <select id="design-designer" class="form-control">
+                        <option value="any">상관없음 (루나 / 유린)</option>
+                        <option value="runa_.04_">루나 디자이너</option>
+                        <option value="aring_u">유린 디자이너</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>외주/제작 요청 사항</label>
+                    <textarea id="design-content" class="form-control" placeholder="원하시는 디자인 스타일 등을 적어주세요." required></textarea>
+                </div>
+                <button type="submit" class="btn">디자인 외주 신청</button>
+            </form>
+        </div>
+
+        <!-- 접수 목록 카드 -->
+        <div class="card">
+            <h3>
+                <span id="list-title">📋 일반 CS 문의 목록</span>
+                <span id="login-status" style="font-size: 0.8rem; color: var(--accent); display: none;"></span>
+            </h3>
+            <div class="list-box" id="data-list">
+                <div class="item"><div class="item-content">접수된 내역이 없습니다.</div></div>
             </div>
         </div>
     </div>
 
     <script>
-        // 웹소켓 연결
+        let currentTab = 'cs';
+        let loggedInUser = null;
+        let loggedInPassword = null;
+        let loggedInRole = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            if (tab === 'cs') {
+                document.getElementById('tab-cs-btn').className = 'tab-btn active';
+                document.getElementById('tab-design-btn').className = 'tab-btn';
+                document.getElementById('cs-form').style.display = 'block';
+                document.getElementById('design-form').style.display = 'none';
+                document.getElementById('list-title').innerText = '📋 일반 CS 문의 목록';
+            } else {
+                document.getElementById('tab-cs-btn').className = 'tab-btn';
+                document.getElementById('tab-design-btn').className = 'tab-btn active';
+                document.getElementById('cs-form').style.display = 'none';
+                document.getElementById('design-form').style.display = 'block';
+                document.getElementById('list-title').innerText = '📋 디자인 외주 신청 목록';
+            }
+            loadData();
+        }
+
+        async function openLoginModal() {
+            if (loggedInUser) {
+                loggedInUser = null;
+                loggedInPassword = null;
+                loggedInRole = null;
+                document.getElementById('auth-btn').innerText = '운영진 로그인';
+                document.getElementById('pw-btn').style.display = 'none';
+                document.getElementById('login-status').style.display = 'none';
+                alert('로그아웃되었습니다.');
+                loadData();
+                return;
+            }
+
+            const username = prompt("디스코드 아이디를 입력하세요 (예: may_0329):");
+            if (!username) return;
+            const password = prompt("비밀번호를 입력하세요:");
+            if (!password) return;
+
+            try {
+                const res = await fetch('/inquiry/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username.trim(), password: password })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    loggedInUser = data.username;
+                    loggedInPassword = password;
+                    loggedInRole = data.role;
+
+                    document.getElementById('auth-btn').innerText = '로그아웃';
+                    document.getElementById('pw-btn').style.display = 'inline-block';
+                    const statusText = document.getElementById('login-status');
+                    statusText.innerText = `[${loggedInUser} (${loggedInRole})]`;
+                    statusText.style.display = 'inline';
+                    alert(`환영합니다, ${loggedInUser} (${loggedInRole})님!`);
+                    loadData();
+                } else {
+                    alert('아이디 또는 비밀번호가 틀렸습니다.');
+                }
+            } catch (e) {
+                alert('로그인 오류 발생');
+            }
+        }
+
+        async function openPasswordChangeModal() {
+            const oldPwd = prompt("기존 비밀번호를 입력하세요:");
+            if (!oldPwd) return;
+            const newPwd = prompt("변경할 새 비밀번호를 입력하세요:");
+            if (!newPwd) return;
+
+            try {
+                const res = await fetch('/inquiry/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: loggedInUser, old_password: oldPwd, new_password: newPwd })
+                });
+                if (res.ok) {
+                    loggedInPassword = newPwd;
+                    alert('비밀번호가 성공적으로 변경되었습니다!');
+                } else {
+                    alert('기존 비밀번호가 틀렸습니다.');
+                }
+            } catch (e) {
+                alert('변경 중 오류 발생');
+            }
+        }
+
+        async function loadData() {
+            const endpoint = currentTab === 'cs' ? '/inquiry/cs' : '/inquiry/design';
+            try {
+                const res = await fetch(endpoint);
+                const result = await res.json();
+                const container = document.getElementById('data-list');
+
+                if (result.data.length > 0) {
+                    container.innerHTML = '';
+                    result.data.forEach(item => {
+                        // 디자이너(runa_.04_, aring_u)인 경우 본인에게 지정된 건이나 'any'만 표시
+                        if (loggedInRole === 'Designer') {
+                            if (item.designer !== loggedInUser && item.designer !== 'any') return;
+                        }
+
+                        const div = document.createElement('div');
+                        div.className = 'item';
+
+                        let designerBadge = '';
+                        if (currentTab === 'design') {
+                            designerBadge = `<span class="badge">담당: ${item.designer}</span>`;
+                        }
+
+                        let deleteBtn = '';
+                        if (loggedInUser) {
+                            deleteBtn = `<button class="btn-sm btn-danger" onclick="deleteItem(${item.id})">삭제</button>`;
+                        }
+
+                        div.innerHTML = `
+                            <div class="item-content">
+                                <div class="item-header">
+                                    <span>${item.author} (${item.contact}) ${designerBadge}</span>
+                                    <span class="item-time">${item.created_at}</span>
+                                </div>
+                                <div>${item.content}</div>
+                            </div>
+                            ${deleteBtn}
+                        `;
+                        container.appendChild(div);
+                    });
+
+                    if (container.innerHTML === '') {
+                        container.innerHTML = '<div class="item"><div class="item-content">확인할 수 있는 내역이 없습니다.</div></div>';
+                    }
+                } else {
+                    container.innerHTML = '<div class="item"><div class="item-content">접수된 내역이 없습니다.</div></div>';
+                }
+            } catch (e) {
+                console.error("데이터 로드 실패:", e);
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+            try {
+                const res = await fetch(`/inquiry/${currentTab}/${id}?username=${encodeURIComponent(loggedInUser)}&password=${encodeURIComponent(loggedInPassword)}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    alert('삭제되었습니다.');
+                    loadData();
+                } else {
+                    alert('삭제 권한이 없습니다.');
+                }
+            } catch (e) {
+                alert('서버 오류');
+            }
+        }
+
+        document.getElementById('cs-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const author = document.getElementById('cs-author').value;
+            const contact = document.getElementById('cs-contact').value;
+            const content = document.getElementById('cs-content').value;
+
+            const res = await fetch('/inquiry/cs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ author, contact, content })
+            });
+            if (res.ok) {
+                alert('CS 문의 접수 완료!');
+                document.getElementById('cs-form').reset();
+                loadData();
+            }
+        });
+
+        document.getElementById('design-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const author = document.getElementById('design-author').value;
+            const contact = document.getElementById('design-contact').value;
+            const designer = document.getElementById('design-designer').value;
+            const content = document.getElementById('design-content').value;
+
+            const res = await fetch('/inquiry/design', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ author, contact, designer, content })
+            });
+            if (res.ok) {
+                alert('외주 신청 완료!');
+                document.getElementById('design-form').reset();
+                loadData();
+            }
+        });
+
         const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
         const ws = new WebSocket(protocol + window.location.host + '/ws');
-
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
             if (data.event === 'channel_create') {
                 const listContainer = document.getElementById('channel-list');
-                
-                // 첫 연결 대기 문구 제거
-                if (listContainer.innerHTML.includes('서버 연결 대기 중...')) {
-                    listContainer.innerHTML = '';
-                }
-
+                if (listContainer.innerHTML.includes('서버 연결 대기 중...')) listContainer.innerHTML = '';
                 const newItem = document.createElement('div');
-                newItem.className = 'live-item';
-                newItem.innerHTML = `🚀 새 채널 생성됨: <strong>#${data.channel_name}</strong>`;
+                newItem.className = 'item';
+                newItem.innerHTML = `<div class="item-content">🚀 새 채널 생성됨: <strong>#${data.channel_name}</strong></div>`;
                 listContainer.prepend(newItem);
             }
         };
+
+        loadData();
     </script>
 </body>
 </html>

@@ -49,10 +49,10 @@ def load_cogs(application: FastAPI):
 
 load_cogs(app)
 
-# 메인 페이지 라우터
+# 메인 페이지 라우터 (최신 Jinja2 템플릿 호환 방식 적용)
 @app.get("/")
 def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request, "index.html")
 
 # 디스코드 봇이 채널 생성 시 호출하는 API 엔드포인트
 @app.post("/api/channel-created")
@@ -62,7 +62,6 @@ async def channel_created(data: ChannelData):
         "channel_id": data.channel_id,
         "channel_name": data.channel_name
     }
-    # 접속 중인 모든 웹 브라우저에 실시간 전송
     await manager.broadcast(payload)
     return {"status": "success", "message": "Broadcasted successfully"}
 
